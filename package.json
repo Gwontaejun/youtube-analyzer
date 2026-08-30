@@ -1,0 +1,12 @@
+{
+  "name": "youtube-analyzer",
+  "private": true,
+  "scripts": {
+    "dev": "call scripts\\start-backend.bat",
+    "backend": "npm run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "test:backend": "cd backend && .venv\\Scripts\\python.exe -m pytest",
+    "lint": "npm --prefix frontend run lint",
+    "build": "npm --prefix frontend run build"
+  }
+}
