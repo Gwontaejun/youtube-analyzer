@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.schemas.youtube import AnalyzeResponse, CollectCommentsRequest
+from app.schemas.youtube import AnalyzeResponse, CollectCommentsRequest, CommentCategory, TargetType
 from app.services.analysis_pipeline import analyze_target
 from app.services.gemini_service import GeminiResponseValidationError, GeminiService, GeminiServiceError, get_gemini_service
 from app.services.youtube_service import YouTubeCommentsUnavailableError, YouTubeNotFoundError, YouTubeService, YouTubeServiceError, get_youtube_service
-from app.services.youtube_target import InvalidYouTubeUrl
+from app.services.youtube_target import InvalidYouTubeUrl, detect_youtube_target
 
 router = APIRouter(tags=["analysis"])
 
@@ -16,6 +16,23 @@ async def analyze(
     gemini_service: GeminiService = Depends(get_gemini_service),
 ) -> AnalyzeResponse:
     try:
+        target = detect_youtube_target(str(request.url))
+        if target.target_type is TargetType.CHANNEL:
+            channel = await youtube_service.get_channel_info(
+                channel_id=target.channel_id,
+                handle=target.handle,
+            )
+            return AnalyzeResponse(
+                target_type=TargetType.CHANNEL,
+                target=channel,
+                total_comments=0,
+                categories={category.value: 0 for category in CommentCategory},
+                top_requests=[],
+                top_complaints=[],
+                summary="",
+                content_ideas=[],
+                analyzed_video_count=None,
+            )
         result = await analyze_target(request, youtube_service, gemini_service)
         return AnalyzeResponse(
             target_type=result.target_type,

@@ -5,7 +5,7 @@ export type CommentExcerpt = { id: string; text: string };
 export type ContentIdea = { title: string; reason: string; sourceTopics: string[]; evidenceComments: CommentExcerpt[] };
 
 type BaseTarget = { id: string; title: string; thumbnail: string | null };
-export type VideoTarget = BaseTarget & { channelId: string; channelTitle: string; publishedAt: string };
+export type VideoTarget = BaseTarget & { channelId: string; channelTitle: string; publishedAt: string; likeCount: number };
 export type ChannelTarget = BaseTarget & { uploadsPlaylistId: string };
 
 export type AnalysisResponse = {

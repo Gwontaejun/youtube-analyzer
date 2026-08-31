@@ -48,6 +48,7 @@ class VideoInfo(BaseModel):
     channel_id: str = Field(serialization_alias="channelId")
     channel_title: str = Field(serialization_alias="channelTitle")
     published_at: str = Field(serialization_alias="publishedAt")
+    like_count: int = Field(default=0, serialization_alias="likeCount")
 
     model_config = ConfigDict(populate_by_name=True)
 

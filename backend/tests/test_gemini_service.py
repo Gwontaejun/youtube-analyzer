@@ -52,3 +52,6 @@ def test_classification_prompt_preserves_playful_comment_context() -> None:
 
     assert "playful reaction" in prompt
     assert "not complaint" in prompt
+    assert "Never invent" in prompt
+    assert "광고가 많음" in prompt
+    assert 'explicitly mentions "광고"' in prompt

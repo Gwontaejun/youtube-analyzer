@@ -95,6 +95,12 @@ Tone and context rules:
 
 Use exactly one category. Sentiment must be positive, neutral, or negative. Use a short, generalized Korean topic for questions, content requests, and complaints when possible; otherwise use null.
 
+Topic grounding rules:
+- Derive a topic only from information explicitly present in the comment. Never invent a video detail, product feature, or production issue.
+- For example, "요즘 광고가 너무 많아서 몰입이 깨져요" must have the complaint topic "광고가 많음", not an unrelated topic such as subtitles or editing.
+- If a complaint explicitly mentions "광고", the topic must be "광고가 많음". Do not substitute a different production issue.
+- Use a broader normalized form when appropriate: requests to compare a specific iPhone and Galaxy are "스마트폰 비교"; questions about battery duration are "배터리 성능".
+
 Input comments:
 """ + json.dumps([comment.model_dump() for comment in comments], ensure_ascii=False)
 

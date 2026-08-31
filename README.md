@@ -85,6 +85,12 @@ API 키는 백엔드 환경 변수에서만 사용합니다. `.env` 파일은 �
 
 장난스러운 과장, 밈, 친근한 놀림, 웃음 표현은 명확한 불만이나 공격 의도가 없는 한 `complaint` 또는 `toxic`으로 분류하지 않도록 프롬프트 기준을 적용합니다.
 
+토픽은 댓글에 명시된 내용만 근거로 정규화합니다. 예를 들어 광고 불만을 자막·편집 문제처럼 추론하지 않도록 제한합니다.
+
+### 분류 품질 점검 (Phase 12)
+
+대표적인 웃음·콘텐츠 요청·광고 불만·악성 표현·질문·장난스러운 반응을 실제 Gemini 호출로 점검했습니다. 프롬프트는 장난스러운 비판을 불만으로 과대 분류하지 않고, 토픽을 댓글에 명시된 내용에서만 뽑도록 보강했습니다.
+
 ### 분석 집계 (Phase 6)
 
 `/api/youtube/comments/analyze`는 댓글별 분석 결과와 함께 Python에서 계산한 `categories`(모든 카테고리별 개수) 및 `topics`(빈도순 주제 목록)를 반환합니다. 숫자 집계는 Gemini에 맡기지 않습니다.
@@ -111,9 +117,13 @@ API 키는 백엔드 환경 변수에서만 사용합니다. `.env` 파일은 �
 
 분석이 완료되면 입력 화면은 반응형 대시보드로 전환됩니다. 영상·채널별 헤더, 카테고리 분포, 콘텐츠 요청, 불만, AI 요약, 콘텐츠 아이디어 및 근거 댓글을 표시합니다.
 
+UI는 외부 이미지 의존성 없이 CSS 기반의 픽셀 아케이드 스타일을 사용하며, 작은 화면에서도 주요 정보와 입력 요소를 유지합니다.
+
 ## 검증
 
 ```powershell
 cd backend
 pytest
 ```
+
+Video URL analysis responses include the official public YouTube metric `likeCount` in `target`. Public dislike counts are not provided by the YouTube API and are intentionally not shown.

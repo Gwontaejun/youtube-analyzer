@@ -53,13 +53,17 @@ class YouTubeService:
         return ChannelInfo(id=item["id"], title=snippet["title"], thumbnail=_thumbnail(snippet), uploads_playlist_id=details["relatedPlaylists"]["uploads"])
 
     async def get_video_info(self, video_id: str) -> VideoInfo:
-        payload = await self._request("videos", {"part": "snippet", "id": video_id})
+        payload = await self._request("videos", {"part": "snippet,statistics", "id": video_id})
         items = payload.get("items", [])
         if not items:
             raise YouTubeNotFoundError("Video not found or unavailable")
         item = items[0]
-        snippet = item["snippet"]
-        return VideoInfo(id=item["id"], title=snippet["title"], thumbnail=_thumbnail(snippet), channel_id=snippet["channelId"], channel_title=snippet["channelTitle"], published_at=snippet["publishedAt"])
+        snippet, statistics = item["snippet"], item.get("statistics", {})
+        return VideoInfo(
+            id=item["id"], title=snippet["title"], thumbnail=_thumbnail(snippet),
+            channel_id=snippet["channelId"], channel_title=snippet["channelTitle"],
+            published_at=snippet["publishedAt"], like_count=int(statistics.get("likeCount", 0)),
+        )
 
     async def get_video_comments(
         self, video_id: str, max_comments: int, video_title: str, owner_channel_id: str

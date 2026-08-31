@@ -19,11 +19,12 @@ async def test_resolves_channel_handle() -> None:
 @pytest.mark.asyncio
 async def test_resolves_video() -> None:
     async def handler(_: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"items": [{"id": "video1", "snippet": {"title": "Video", "channelId": "UC1", "channelTitle": "Channel", "publishedAt": "2026-01-01T00:00:00Z", "thumbnails": {"default": {"url": "https://image"}}}}]})
+        return httpx.Response(200, json={"items": [{"id": "video1", "snippet": {"title": "Video", "channelId": "UC1", "channelTitle": "Channel", "publishedAt": "2026-01-01T00:00:00Z", "thumbnails": {"default": {"url": "https://image"}}}, "statistics": {"viewCount": "1200", "likeCount": "98"}}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         info = await YouTubeService("test-key", client).get_video_info("video1")
     assert info.channel_title == "Channel"
+    assert info.like_count == 98
 
 
 @pytest.mark.asyncio

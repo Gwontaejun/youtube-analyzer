@@ -4,7 +4,7 @@
 
 This is a monorepo for analyzing public YouTube comments. The stack is Next.js/TypeScript (`frontend/`) and FastAPI/Python (`backend/`).
 
-Current completed scope is **Phase 0–11 only**: URL detection, metadata resolution, comment collection, preprocessing/batching, Gemini classification, aggregation, final insights, unified API, responsive input/loading UI, and responsive result dashboard. Do not add persistence, authentication, queues, payment, OAuth, or real-time progress until their designated phase.
+Current completed scope is **Phase 0–12 only**: URL detection, metadata resolution, comment collection, preprocessing/batching, Gemini classification, aggregation, final insights, unified API, responsive input/loading UI, responsive dashboard, and prompt-quality validation. Do not add persistence, authentication, queues, payment, OAuth, or real-time progress until their designated phase.
 
 ## Architecture rules
 
