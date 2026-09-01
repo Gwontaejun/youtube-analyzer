@@ -1,10 +1,11 @@
 from collections.abc import AsyncIterator
+import re
 from typing import Any
 
 import httpx
 
 from app.core.config import get_settings
-from app.schemas.youtube import ChannelInfo, Comment, VideoInfo
+from app.schemas.youtube import ChannelInfo, ChannelVideo, Comment, VideoInfo
 
 
 class YouTubeServiceError(RuntimeError):
@@ -43,14 +44,41 @@ class YouTubeService:
     async def get_channel_info(self, *, channel_id: str | None = None, handle: str | None = None) -> ChannelInfo:
         if bool(channel_id) == bool(handle):
             raise ValueError("Provide either channel_id or handle")
-        params = {"part": "snippet,contentDetails", **({"id": channel_id} if channel_id else {"forHandle": handle or ""})}
+        params = {"part": "snippet,contentDetails,statistics", **({"id": channel_id} if channel_id else {"forHandle": handle or ""})}
         payload = await self._request("channels", params)
         items = payload.get("items", [])
         if not items:
             raise YouTubeNotFoundError("Channel not found")
         item = items[0]
-        snippet, details = item["snippet"], item["contentDetails"]
-        return ChannelInfo(id=item["id"], title=snippet["title"], thumbnail=_thumbnail(snippet), uploads_playlist_id=details["relatedPlaylists"]["uploads"])
+        snippet, details, statistics = item["snippet"], item["contentDetails"], item.get("statistics", {})
+        return ChannelInfo(
+            id=item["id"], title=snippet["title"], thumbnail=_thumbnail(snippet),
+            description=snippet.get("description", ""), published_at=snippet.get("publishedAt", ""),
+            country=snippet.get("country"),
+            subscriber_count=int(statistics.get("subscriberCount", 0)), view_count=int(statistics.get("viewCount", 0)),
+            video_count=int(statistics.get("videoCount", 0)), hidden_subscriber_count=statistics.get("hiddenSubscriberCount", False),
+            uploads_playlist_id=details["relatedPlaylists"]["uploads"],
+        )
+
+    async def get_recent_channel_videos(self, uploads_playlist_id: str, limit: int = 12) -> list[ChannelVideo]:
+        payload = await self._request("playlistItems", {"part": "snippet", "playlistId": uploads_playlist_id, "maxResults": str(limit)})
+        video_ids = [item.get("snippet", {}).get("resourceId", {}).get("videoId") for item in payload.get("items", [])]
+        ids = [video_id for video_id in video_ids if video_id]
+        if not ids:
+            return []
+        videos_payload = await self._request("videos", {"part": "snippet,statistics,contentDetails", "id": ",".join(ids)})
+        by_id = {item["id"]: item for item in videos_payload.get("items", [])}
+        videos: list[ChannelVideo] = []
+        for video_id in ids:
+            if item := by_id.get(video_id):
+                snippet, statistics, details = item["snippet"], item.get("statistics", {}), item.get("contentDetails", {})
+                videos.append(ChannelVideo(
+                    id=video_id, title=snippet["title"], thumbnail=_thumbnail(snippet), published_at=snippet.get("publishedAt", ""),
+                    view_count=int(statistics.get("viewCount", 0)), like_count=int(statistics.get("likeCount", 0)),
+                    comment_count=int(statistics.get("commentCount", 0)),
+                    duration_seconds=_duration_seconds(details.get("duration", "")),
+                ))
+        return videos
 
     async def get_video_info(self, video_id: str) -> VideoInfo:
         payload = await self._request("videos", {"part": "snippet,statistics", "id": video_id})
@@ -151,6 +179,14 @@ def _is_comments_unavailable(response: httpx.Response) -> bool:
     except (ValueError, AttributeError):
         return False
     return bool(reasons & {"commentsDisabled", "videoNotFound"})
+
+
+def _duration_seconds(value: str) -> int:
+    match = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", value)
+    if not match:
+        return 0
+    hours, minutes, seconds = (int(part or 0) for part in match.groups())
+    return hours * 3600 + minutes * 60 + seconds
 
 
 def get_youtube_service() -> YouTubeService:

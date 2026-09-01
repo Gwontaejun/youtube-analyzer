@@ -22,6 +22,7 @@ async def analyze(
                 channel_id=target.channel_id,
                 handle=target.handle,
             )
+            recent_videos = await youtube_service.get_recent_channel_videos(channel.uploads_playlist_id)
             return AnalyzeResponse(
                 target_type=TargetType.CHANNEL,
                 target=channel,
@@ -32,6 +33,7 @@ async def analyze(
                 summary="",
                 content_ideas=[],
                 analyzed_video_count=None,
+                recent_videos=recent_videos,
             )
         result = await analyze_target(request, youtube_service, gemini_service)
         return AnalyzeResponse(
@@ -44,6 +46,7 @@ async def analyze(
             summary=result.insight.summary,
             content_ideas=result.insight.content_ideas,
             analyzed_video_count=result.analyzed_video_count,
+            recent_videos=[],
         )
     except InvalidYouTubeUrl as error:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from error

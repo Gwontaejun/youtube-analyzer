@@ -36,6 +36,13 @@ class ChannelInfo(BaseModel):
     id: str
     title: str
     thumbnail: str | None = None
+    description: str = ""
+    country: str | None = None
+    published_at: str = Field(default="", serialization_alias="publishedAt")
+    subscriber_count: int = Field(default=0, serialization_alias="subscriberCount")
+    view_count: int = Field(default=0, serialization_alias="viewCount")
+    video_count: int = Field(default=0, serialization_alias="videoCount")
+    hidden_subscriber_count: bool = Field(default=False, serialization_alias="hiddenSubscriberCount")
     uploads_playlist_id: str = Field(serialization_alias="uploadsPlaylistId")
 
     model_config = ConfigDict(populate_by_name=True)
@@ -49,6 +56,19 @@ class VideoInfo(BaseModel):
     channel_title: str = Field(serialization_alias="channelTitle")
     published_at: str = Field(serialization_alias="publishedAt")
     like_count: int = Field(default=0, serialization_alias="likeCount")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class ChannelVideo(BaseModel):
+    id: str
+    title: str
+    thumbnail: str | None = None
+    published_at: str = Field(serialization_alias="publishedAt")
+    view_count: int = Field(default=0, serialization_alias="viewCount")
+    like_count: int = Field(default=0, serialization_alias="likeCount")
+    comment_count: int = Field(default=0, serialization_alias="commentCount")
+    duration_seconds: int = Field(default=0, serialization_alias="durationSeconds")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -191,5 +211,6 @@ class AnalyzeResponse(BaseModel):
     summary: str
     content_ideas: list[ContentIdea] = Field(serialization_alias="contentIdeas")
     analyzed_video_count: int | None = Field(default=None, serialization_alias="analyzedVideoCount")
+    recent_videos: list[ChannelVideo] = Field(default_factory=list, serialization_alias="recentVideos")
 
     model_config = ConfigDict(populate_by_name=True)

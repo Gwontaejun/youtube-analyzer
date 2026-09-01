@@ -21,13 +21,16 @@ def test_resolve_endpoint_returns_channel_metadata() -> None:
     assert response.status_code == 200
     assert response.json() == {
         "targetType": "channel",
-        "target": {"id": "UC1", "title": "Example", "thumbnail": None, "uploadsPlaylistId": "UU1"},
+        "target": {"id": "UC1", "title": "Example", "thumbnail": None, "description": "", "country": None, "publishedAt": "", "subscriberCount": 0, "viewCount": 0, "videoCount": 0, "hiddenSubscriberCount": False, "uploadsPlaylistId": "UU1"},
     }
 
 
 class FakeCommentService:
     async def get_channel_info(self, **_: str | None) -> ChannelInfo:
         return ChannelInfo(id="UC1", title="Example", thumbnail=None, uploads_playlist_id="UU1")
+
+    async def get_recent_channel_videos(self, _: str):
+        return []
 
     async def get_video_info(self, _: str) -> VideoInfo:
         return VideoInfo(id="video1", title="Video", thumbnail=None, channel_id="UC1", channel_title="Channel", published_at="2026-01-01T00:00:00Z", like_count=98)
@@ -92,6 +95,7 @@ def test_final_analyze_endpoint_returns_dashboard_ready_response() -> None:
         "summary": "긍정적인 반응입니다.",
         "contentIdeas": [],
         "analyzedVideoCount": None,
+        "recentVideos": [],
     }
 
 

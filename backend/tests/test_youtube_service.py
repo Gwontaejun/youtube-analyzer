@@ -8,12 +8,28 @@ from app.services.youtube_service import YouTubeCommentsUnavailableError, YouTub
 async def test_resolves_channel_handle() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.params["forHandle"] == "@example"
-        return httpx.Response(200, json={"items": [{"id": "UC1", "snippet": {"title": "Example", "thumbnails": {"high": {"url": "https://image"}}}, "contentDetails": {"relatedPlaylists": {"uploads": "UU1"}}}]})
+        return httpx.Response(200, json={"items": [{"id": "UC1", "snippet": {"title": "Example", "thumbnails": {"high": {"url": "https://image"}}}, "contentDetails": {"relatedPlaylists": {"uploads": "UU1"}}, "statistics": {"subscriberCount": "1200", "viewCount": "34000", "videoCount": "18", "hiddenSubscriberCount": False}}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         info = await YouTubeService("test-key", client).get_channel_info(handle="@example")
     assert info.id == "UC1"
     assert info.uploads_playlist_id == "UU1"
+    assert info.subscriber_count == 1200
+    assert info.view_count == 34000
+
+
+@pytest.mark.asyncio
+async def test_collects_recent_channel_video_metrics_in_upload_order() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("playlistItems"):
+            return httpx.Response(200, json={"items": [{"snippet": {"resourceId": {"videoId": "first"}}}, {"snippet": {"resourceId": {"videoId": "second"}}}]})
+        assert request.url.params["id"] == "first,second"
+        return httpx.Response(200, json={"items": [{"id": "second", "snippet": {"title": "Second", "publishedAt": "2026-01-02T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "20", "likeCount": "2", "commentCount": "1"}}, {"id": "first", "snippet": {"title": "First", "publishedAt": "2026-01-01T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "10", "likeCount": "1", "commentCount": "0"}}]})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        videos = await YouTubeService("test-key", client).get_recent_channel_videos("UU1")
+
+    assert [(video.id, video.view_count) for video in videos] == [("first", 10), ("second", 20)]
 
 
 @pytest.mark.asyncio

@@ -127,3 +127,5 @@ pytest
 ```
 
 Video URL analysis responses include the official public YouTube metric `likeCount` in `target`. Public dislike counts are not provided by the YouTube API and are intentionally not shown.
+
+Channel URL analysis does not collect comments. It returns public channel statistics and up to twelve recent videos with their public view, like, comment, and duration data for the channel dashboard. The dashboard calculates current-snapshot metrics such as engagement rate, upload cadence, title keywords, and relative recent-video performance without storing historical data.
