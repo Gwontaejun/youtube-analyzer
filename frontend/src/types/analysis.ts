@@ -8,6 +8,7 @@ type BaseTarget = { id: string; title: string; thumbnail: string | null };
 export type VideoTarget = BaseTarget & { channelId: string; channelTitle: string; publishedAt: string; likeCount: number };
 export type ChannelTarget = BaseTarget & { uploadsPlaylistId: string; description: string; country: string | null; publishedAt: string; subscriberCount: number; viewCount: number; videoCount: number; hiddenSubscriberCount: boolean };
 export type ChannelVideo = BaseTarget & { publishedAt: string; viewCount: number; likeCount: number; commentCount: number; durationSeconds: number };
+export type ChannelInsight = { summary: string; strengths: string[]; opportunities: string[] };
 
 export type AnalysisResponse = {
   targetType: "video" | "channel";
@@ -20,4 +21,5 @@ export type AnalysisResponse = {
   contentIdeas: ContentIdea[];
   analyzedVideoCount: number | null;
   recentVideos: ChannelVideo[];
+  channelInsight: ChannelInsight | null;
 };

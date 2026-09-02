@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.schemas.youtube import AnalyzeResponse, CollectCommentsRequest, CommentCategory, TargetType
+from app.schemas.youtube import AnalyzeResponse, ChannelInsightInput, CollectCommentsRequest, CommentCategory, TargetType
 from app.services.analysis_pipeline import analyze_target
 from app.services.gemini_service import GeminiResponseValidationError, GeminiService, GeminiServiceError, get_gemini_service
 from app.services.youtube_service import YouTubeCommentsUnavailableError, YouTubeNotFoundError, YouTubeService, YouTubeServiceError, get_youtube_service
@@ -23,6 +23,9 @@ async def analyze(
                 handle=target.handle,
             )
             recent_videos = await youtube_service.get_recent_channel_videos(channel.uploads_playlist_id)
+            channel_insight = await gemini_service.generate_channel_insight(
+                ChannelInsightInput(channel=channel, recent_videos=recent_videos[:12])
+            )
             return AnalyzeResponse(
                 target_type=TargetType.CHANNEL,
                 target=channel,
@@ -34,6 +37,7 @@ async def analyze(
                 content_ideas=[],
                 analyzed_video_count=None,
                 recent_videos=recent_videos,
+                channel_insight=channel_insight,
             )
         result = await analyze_target(request, youtube_service, gemini_service)
         return AnalyzeResponse(
@@ -57,4 +61,4 @@ async def analyze(
     except GeminiResponseValidationError as error:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Gemini returned an invalid analysis response") from error
     except (YouTubeServiceError, GeminiServiceError) as error:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Unable to analyze YouTube comments") from error
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Unable to analyze YouTube data") from error

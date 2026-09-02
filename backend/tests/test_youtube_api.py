@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.api.youtube import get_youtube_service
-from app.schemas.youtube import ChannelInfo, Comment, CommentAnalysis, FinalInsight, VideoInfo
+from app.schemas.youtube import ChannelInfo, ChannelInsight, Comment, CommentAnalysis, FinalInsight, VideoInfo
 from app.services.gemini_service import get_gemini_service
 
 
@@ -60,6 +60,14 @@ class FakeGeminiService:
         return FinalInsight(summary="긍정적인 반응입니다.", top_requests=[], top_complaints=[], content_ideas=[])
 
 
+    async def generate_channel_insight(self, _):
+        return ChannelInsight(
+            summary="Public channel snapshot insight.",
+            strengths=["Clear recent topic focus."],
+            opportunities=["Test a follow-up topic."],
+        )
+
+
 def test_analyze_endpoint_returns_validated_comment_analyses() -> None:
     app.dependency_overrides[get_youtube_service] = lambda: FakeCommentService()
     app.dependency_overrides[get_gemini_service] = lambda: FakeGeminiService()
@@ -96,6 +104,7 @@ def test_final_analyze_endpoint_returns_dashboard_ready_response() -> None:
         "contentIdeas": [],
         "analyzedVideoCount": None,
         "recentVideos": [],
+        "channelInsight": None,
     }
 
 
@@ -111,3 +120,8 @@ def test_final_analyze_endpoint_resolves_channel_without_collecting_comments() -
     assert response.json()["targetType"] == "channel"
     assert response.json()["totalComments"] == 0
     assert response.json()["analyzedVideoCount"] is None
+    assert response.json()["channelInsight"] == {
+        "summary": "Public channel snapshot insight.",
+        "strengths": ["Clear recent topic focus."],
+        "opportunities": ["Test a follow-up topic."],
+    }

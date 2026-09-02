@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from datetime import datetime, timedelta, timezone
 import re
 from typing import Any
 
@@ -60,14 +61,55 @@ class YouTubeService:
             uploads_playlist_id=details["relatedPlaylists"]["uploads"],
         )
 
-    async def get_recent_channel_videos(self, uploads_playlist_id: str, limit: int = 12) -> list[ChannelVideo]:
-        payload = await self._request("playlistItems", {"part": "snippet", "playlistId": uploads_playlist_id, "maxResults": str(limit)})
-        video_ids = [item.get("snippet", {}).get("resourceId", {}).get("videoId") for item in payload.get("items", [])]
-        ids = [video_id for video_id in video_ids if video_id]
+    async def get_recent_channel_videos(
+        self,
+        uploads_playlist_id: str,
+        days: int = 28,
+        now: datetime | None = None,
+    ) -> list[ChannelVideo]:
+        if days < 1:
+            raise ValueError("days must be at least 1")
+        reference_time = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+        cutoff = reference_time.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=days - 1)
+        ids: list[str] = []
+        page_token: str | None = None
+        reached_cutoff = False
+
+        while not reached_cutoff:
+            params = {
+                "part": "snippet,contentDetails",
+                "playlistId": uploads_playlist_id,
+                "maxResults": "50",
+            }
+            if page_token:
+                params["pageToken"] = page_token
+            payload = await self._request("playlistItems", params)
+            for item in payload.get("items", []):
+                snippet = item.get("snippet", {})
+                published_at = item.get("contentDetails", {}).get("videoPublishedAt") or snippet.get("publishedAt", "")
+                published_datetime = _parse_timestamp(published_at)
+                if published_datetime is None:
+                    continue
+                if published_datetime < cutoff:
+                    reached_cutoff = True
+                    break
+                if video_id := snippet.get("resourceId", {}).get("videoId"):
+                    ids.append(video_id)
+            page_token = payload.get("nextPageToken")
+            if not page_token:
+                break
+
         if not ids:
             return []
-        videos_payload = await self._request("videos", {"part": "snippet,statistics,contentDetails", "id": ",".join(ids)})
-        by_id = {item["id"]: item for item in videos_payload.get("items", [])}
+
+        by_id: dict[str, dict[str, Any]] = {}
+        for start in range(0, len(ids), 50):
+            batch = ids[start : start + 50]
+            videos_payload = await self._request(
+                "videos",
+                {"part": "snippet,statistics,contentDetails", "id": ",".join(batch)},
+            )
+            by_id.update({item["id"]: item for item in videos_payload.get("items", [])})
         videos: list[ChannelVideo] = []
         for video_id in ids:
             if item := by_id.get(video_id):
@@ -187,6 +229,16 @@ def _duration_seconds(value: str) -> int:
         return 0
     hours, minutes, seconds = (int(part or 0) for part in match.groups())
     return hours * 3600 + minutes * 60 + seconds
+
+
+def _parse_timestamp(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def get_youtube_service() -> YouTubeService:

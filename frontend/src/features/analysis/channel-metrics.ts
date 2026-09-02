@@ -1,6 +1,10 @@
 export function formatDuration(totalSeconds: number) {
-  if (!totalSeconds) return "길이 정보 없음";
-  const minutes = Math.floor(totalSeconds / 60);
+  if (!totalSeconds) return "--:--";
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return minutes ? `${minutes}분 ${String(seconds).padStart(2, "0")}초` : `${seconds}초`;
+  const paddedSeconds = String(seconds).padStart(2, "0");
+  return hours
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${paddedSeconds}`
+    : `${minutes}:${paddedSeconds}`;
 }

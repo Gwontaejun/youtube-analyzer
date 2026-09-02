@@ -11,9 +11,13 @@ const videoLoading = {
 };
 
 const channelLoading = {
-  kicker: "CHANNEL LOOKUP",
-  messages: ["YouTube 채널 정보를 확인하고 있습니다…", "채널 대시보드를 준비하고 있습니다…"],
-  note: "채널 메타데이터만 빠르게 확인하고 있어요.",
+  kicker: "CHANNEL ANALYSIS",
+  messages: [
+    "YouTube 채널 정보를 확인하고 있습니다…",
+    "최근 영상 데이터를 정리하고 있습니다…",
+    "AI가 채널 인사이트를 만들고 있습니다…",
+  ],
+  note: "공개 채널 데이터로 현재 시점의 인사이트를 만들고 있어요.",
 };
 
 function isChannelUrl(value: string) {
@@ -39,7 +43,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!isSubmitting) { setLoadingStep(0); return; }
-    const timer = window.setInterval(() => setLoadingStep((current) => Math.min(current + 1, loading.messages.length - 1)), loadingType === "channel" ? 1600 : 3500);
+    const timer = window.setInterval(() => setLoadingStep((current) => Math.min(current + 1, loading.messages.length - 1)), loadingType === "channel" ? 2500 : 3500);
     return () => window.clearInterval(timer);
   }, [isSubmitting, loading.messages.length, loadingType]);
 

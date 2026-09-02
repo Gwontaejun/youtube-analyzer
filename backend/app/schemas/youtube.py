@@ -73,6 +73,17 @@ class ChannelVideo(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class ChannelInsightInput(BaseModel):
+    channel: ChannelInfo
+    recent_videos: list[ChannelVideo]
+
+
+class ChannelInsight(BaseModel):
+    summary: str
+    strengths: list[str] = Field(default_factory=list)
+    opportunities: list[str] = Field(default_factory=list)
+
+
 class Comment(BaseModel):
     id: str
     video_id: str = Field(serialization_alias="videoId")
@@ -212,5 +223,6 @@ class AnalyzeResponse(BaseModel):
     content_ideas: list[ContentIdea] = Field(serialization_alias="contentIdeas")
     analyzed_video_count: int | None = Field(default=None, serialization_alias="analyzedVideoCount")
     recent_videos: list[ChannelVideo] = Field(default_factory=list, serialization_alias="recentVideos")
+    channel_insight: ChannelInsight | None = Field(default=None, serialization_alias="channelInsight")
 
     model_config = ConfigDict(populate_by_name=True)

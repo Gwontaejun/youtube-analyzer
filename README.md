@@ -128,4 +128,4 @@ pytest
 
 Video URL analysis responses include the official public YouTube metric `likeCount` in `target`. Public dislike counts are not provided by the YouTube API and are intentionally not shown.
 
-Channel URL analysis does not collect comments. It returns public channel statistics and up to twelve recent videos with their public view, like, comment, and duration data for the channel dashboard. The dashboard calculates current-snapshot metrics such as engagement rate, upload cadence, title keywords, and relative recent-video performance without storing historical data.
+Channel URL analysis does not collect comments. It returns public channel statistics and all public videos uploaded during the latest 28 calendar days with their current view, like, comment, and duration data. The dashboard groups those current cumulative views by upload date and format for its performance chart, while Gemini receives only the latest twelve videos for structured channel insights. It does not claim historical growth or private analytics, and it stores no historical data.

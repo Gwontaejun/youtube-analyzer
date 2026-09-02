@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import httpx
 import pytest
 
@@ -22,14 +24,67 @@ async def test_resolves_channel_handle() -> None:
 async def test_collects_recent_channel_video_metrics_in_upload_order() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("playlistItems"):
-            return httpx.Response(200, json={"items": [{"snippet": {"resourceId": {"videoId": "first"}}}, {"snippet": {"resourceId": {"videoId": "second"}}}]})
+            assert request.url.params["maxResults"] == "50"
+            return httpx.Response(200, json={"items": [{"snippet": {"publishedAt": "2026-01-19T00:00:00Z", "resourceId": {"videoId": "first"}}}, {"snippet": {"publishedAt": "2026-01-18T00:00:00Z", "resourceId": {"videoId": "second"}}}]})
         assert request.url.params["id"] == "first,second"
         return httpx.Response(200, json={"items": [{"id": "second", "snippet": {"title": "Second", "publishedAt": "2026-01-02T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "20", "likeCount": "2", "commentCount": "1"}}, {"id": "first", "snippet": {"title": "First", "publishedAt": "2026-01-01T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "10", "likeCount": "1", "commentCount": "0"}}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
-        videos = await YouTubeService("test-key", client).get_recent_channel_videos("UU1")
+        videos = await YouTubeService("test-key", client).get_recent_channel_videos(
+            "UU1",
+            now=datetime(2026, 1, 20, tzinfo=timezone.utc),
+        )
 
     assert [(video.id, video.view_count) for video in videos] == [("first", 10), ("second", 20)]
+
+
+@pytest.mark.asyncio
+async def test_collects_all_uploads_within_28_days_and_stops_at_cutoff() -> None:
+    playlist_tokens: list[str | None] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("playlistItems"):
+            page_token = request.url.params.get("pageToken")
+            playlist_tokens.append(page_token)
+            if page_token is None:
+                return httpx.Response(
+                    200,
+                    json={
+                        "items": [
+                            {"snippet": {"resourceId": {"videoId": "newest"}}, "contentDetails": {"videoPublishedAt": "2026-09-01T00:00:00Z"}}
+                        ],
+                        "nextPageToken": "page-2",
+                    },
+                )
+            return httpx.Response(
+                200,
+                json={
+                    "items": [
+                        {"snippet": {"resourceId": {"videoId": "recent"}}, "contentDetails": {"videoPublishedAt": "2026-08-10T00:00:00Z"}},
+                        {"snippet": {"resourceId": {"videoId": "old"}}, "contentDetails": {"videoPublishedAt": "2026-07-01T00:00:00Z"}},
+                    ],
+                    "nextPageToken": "unused-page",
+                },
+            )
+        assert request.url.params["id"] == "newest,recent"
+        return httpx.Response(
+            200,
+            json={
+                "items": [
+                    {"id": "newest", "snippet": {"title": "Newest", "publishedAt": "2026-09-01T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "100"}, "contentDetails": {"duration": "PT1M"}},
+                    {"id": "recent", "snippet": {"title": "Recent", "publishedAt": "2026-08-10T00:00:00Z", "thumbnails": {}}, "statistics": {"viewCount": "200"}, "contentDetails": {"duration": "PT10M"}},
+                ]
+            },
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        videos = await YouTubeService("test-key", client).get_recent_channel_videos(
+            "UU1",
+            now=datetime(2026, 9, 2, tzinfo=timezone.utc),
+        )
+
+    assert [video.id for video in videos] == ["newest", "recent"]
+    assert playlist_tokens == [None, "page-2"]
 
 
 @pytest.mark.asyncio
