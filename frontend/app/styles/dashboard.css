@@ -339,29 +339,23 @@
 .metric-videos strong { color: #ffe1a1; }
 .channel-ai-insight {
   position: relative;
-  overflow: hidden;
-  margin-top: 34px;
-  padding: 28px 30px 22px;
-  border: 1px solid #8f76c84a;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 100% 0, #8fa5ff1e, transparent 36%),
-    linear-gradient(135deg, #28242f, #1c2028 72%);
-  box-shadow: inset 0 1px #ffffff10;
+  margin-top: 42px;
+  padding: 0 0 0 24px;
 }
 .channel-ai-insight::before {
   position: absolute;
   top: 0;
-  right: 30px;
-  left: 30px;
-  height: 2px;
-  border-radius: 999px;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
   content: "";
-  background: linear-gradient(90deg, #c79bff, #8fa5ff, #8be1bd);
+  background: linear-gradient(180deg, #8fa5ff, #c79bff 52%, #8be1bd);
+  box-shadow: 0 0 14px #8fa5ff55;
 }
 .channel-ai-insight-heading {
   display: flex;
-  gap: 20px;
+  gap: 18px;
   align-items: flex-start;
   justify-content: space-between;
 }
@@ -375,16 +369,20 @@
   letter-spacing: -0.035em;
 }
 .channel-ai-label {
-  padding: 5px 9px;
-  border: 1px solid #8fa5ff4d;
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #8fa5ff55;
   border-radius: 999px;
   color: #cbd3ff;
-  background: #8fa5ff12;
-  font-size: 0.68rem;
+  background: #8fa5ff10;
+  font-size: 0.67rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 .channel-ai-summary {
-  max-width: 900px;
+  max-width: 940px;
   margin: 17px 0 22px;
   color: #f4f1f7;
   font-size: 1rem;
@@ -448,7 +446,7 @@
 }
 .channel-performance {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   margin-top: 34px;
   padding: 28px 30px 22px;
   border: 1px solid #ffffff16;
@@ -560,6 +558,7 @@
   box-shadow: 0 7px 18px #596ed34a;
 }
 .channel-performance-chart {
+  position: relative;
   width: 100%;
   height: 330px;
   margin-top: 22px;
@@ -580,6 +579,8 @@
 }
 .channel-chart-tooltip {
   width: min(330px, calc(100vw - 48px));
+  max-height: 260px;
+  overflow-y: auto;
   padding: 15px;
   border: 1px solid #ffffff20;
   border-radius: 12px;
@@ -587,6 +588,14 @@
   background: #14161df5;
   box-shadow: 0 18px 42px #00000099;
   backdrop-filter: blur(14px);
+}
+.channel-chart-tooltip-popover {
+  position: absolute;
+  z-index: 20;
+  pointer-events: auto;
+}
+.channel-chart-tooltip-popover.is-above {
+  transform: translateY(-100%);
 }
 .channel-chart-tooltip-date {
   display: block;
@@ -638,6 +647,15 @@
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
+  margin: 0 -7px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.channel-chart-tooltip-video:hover {
+  background: #ffffff0c;
 }
 .channel-chart-tooltip-video img,
 .channel-chart-tooltip-placeholder {
@@ -832,6 +850,48 @@
 }
 .channel-video-card-metrics strong {
   color: var(--ink);
+}
+.channel-video-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 26px;
+}
+.channel-video-more button {
+  display: inline-flex;
+  width: auto;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  border: 1px solid #ffffff24;
+  border-radius: 999px;
+  color: #f1eef6;
+  background: #ffffff0a;
+  box-shadow: none;
+  font-size: 0.82rem;
+}
+.channel-video-more button span {
+  font-weight: 800;
+}
+.channel-video-more button b {
+  color: #a9a4b3;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.channel-video-more button i {
+  color: #b79cff;
+  font-size: 0.88rem;
+  font-style: normal;
+  transition: transform 0.18s ease;
+}
+.channel-video-more button:hover {
+  border-color: #a78bfa80;
+  background: #a78bfa12;
+  box-shadow: none;
+}
+.channel-video-more button:hover i {
+  transform: translateY(2px);
 }
 .channel-data-note {
   margin: 22px 0 0;
@@ -1121,7 +1181,7 @@
     text-align: left;
   }
   .channel-ai-insight {
-    padding: 24px 22px 20px;
+    padding: 0 0 0 18px;
   }
   .channel-ai-points {
     grid-template-columns: 1fr;

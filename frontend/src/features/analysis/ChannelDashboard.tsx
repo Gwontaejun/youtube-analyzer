@@ -22,6 +22,9 @@ const ChannelPerformanceChart = dynamic(
   },
 );
 
+const INITIAL_VIDEO_COUNT = 9;
+type ContentType = "long-form" | "shorts";
+
 function formatCount(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     notation: "compact",
@@ -106,11 +109,32 @@ export function ChannelDashboard({
   const shortVideos = result.recentVideos.filter(
     (video) => video.durationSeconds > 0 && video.durationSeconds <= 180,
   );
-  const [contentType, setContentType] = useState<"long-form" | "shorts">(
-    "long-form",
-  );
+  const [contentType, setContentType] = useState<ContentType>("long-form");
+  const [visibleVideoCounts, setVisibleVideoCounts] = useState<
+    Record<ContentType, number>
+  >({
+    "long-form": INITIAL_VIDEO_COUNT,
+    shorts: INITIAL_VIDEO_COUNT,
+  });
   const selectedVideos =
     contentType === "long-form" ? longFormVideos : shortVideos;
+  const visibleVideoCount = visibleVideoCounts[contentType];
+  const visibleVideos = selectedVideos.slice(0, visibleVideoCount);
+  const remainingVideoCount = Math.max(
+    selectedVideos.length - visibleVideoCount,
+    0,
+  );
+  const nextVideoCount = Math.min(INITIAL_VIDEO_COUNT, remainingVideoCount);
+
+  const showMoreVideos = () => {
+    setVisibleVideoCounts((current) => ({
+      ...current,
+      [contentType]: Math.min(
+        current[contentType] + INITIAL_VIDEO_COUNT,
+        selectedVideos.length,
+      ),
+    }));
+  };
 
   return (
     <main className="dashboard-shell channel-dashboard">
@@ -168,7 +192,7 @@ export function ChannelDashboard({
             aria-selected={contentType === "long-form"}
             onClick={() => setContentType("long-form")}
           >
-            <span>롱폼 영상</span>
+            <span>롱폼</span>
             <b>{longFormVideos.length}</b>
           </button>
           <button
@@ -183,13 +207,26 @@ export function ChannelDashboard({
           </button>
         </div>
         <VideoCards
-          videos={selectedVideos}
+          videos={visibleVideos}
           emptyCopy={
             contentType === "long-form"
-              ? "최근 롱폼 영상을 찾지 못했습니다."
-              : "최근 숏츠를 찾지 못했습니다."
+              ? "최근 롱폼을 찾지 못했습니다."
+              : "최근 Shorts를 찾지 못했습니다."
           }
         />
+        {remainingVideoCount > 0 ? (
+          <div className="channel-video-more">
+            <button
+              type="button"
+              onClick={showMoreVideos}
+              aria-label={`영상 ${nextVideoCount}개 더보기`}
+            >
+              <span>더보기</span>
+              <b>{nextVideoCount}개 더</b>
+              <i aria-hidden="true">↓</i>
+            </button>
+          </div>
+        ) : null}
       </section>
     </main>
   );
