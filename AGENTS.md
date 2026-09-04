@@ -1,4 +1,4 @@
-# YouTube Analyzer — Agent Guide
+# Channelytics — Agent Guide
 
 ## Product and scope
 

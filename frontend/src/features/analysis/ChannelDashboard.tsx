@@ -171,7 +171,7 @@ export function ChannelDashboard({
             </div>
           </div>
           <p className="channel-ai-note">
-            채널 정보와 최근 영상 데이터만 사용한 현재 시점의 분석입니다.
+            AI를 활용하여 분석한 결과로 분석이 항상 일정하지 않을 수 있습니다.
           </p>
         </section>
       ) : null}

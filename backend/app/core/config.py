@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     youtube_api_key: str | None = None
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-3.5-flash-lite"
+    gemini_model: str = "gemini-3.1-flash-lite"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
