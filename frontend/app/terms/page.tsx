@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { createPageMetadata } from "../../src/shared/seo";
+
+export const metadata = createPageMetadata({
+  title: "이용약관",
+  description: "Channelytics 서비스의 이용 조건과 분석 결과의 성격을 안내합니다.",
+  path: "/terms",
+  noIndex: true,
+});
 
 export default function TermsPage() {
   return <main className="legal-page">

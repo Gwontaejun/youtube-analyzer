@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { createPageMetadata } from "../../src/shared/seo";
+
+export const metadata = createPageMetadata({
+  title: "개인정보처리방침",
+  description: "Channelytics 서비스의 개인정보 및 광고 데이터 처리 방침입니다.",
+  path: "/privacy",
+  noIndex: true,
+});
 
 export default function PrivacyPage() {
   return <main className="legal-page">

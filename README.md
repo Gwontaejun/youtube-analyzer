@@ -29,7 +29,7 @@ npm run lint
 npm run build
 ```
 
-프런트엔드는 `http://localhost:3000`에서 실행됩니다. `frontend/.env.example`을 `.env.local`로 복사해 백엔드 URL을 바꿀 수 있으며, 비밀 API 키는 프런트엔드 환경 변수에 넣지 않습니다.
+프런트엔드는 `http://localhost:3000`에서 실행됩니다. `frontend/.env.example`을 `.env.local`로 복사해 백엔드 URL을 바꿀 수 있으며, 비밀 API 키는 프런트엔드 환경 변수에 넣지 않습니다. 배포할 때는 `SITE_URL`을 실제 공개 도메인으로 설정해야 canonical URL, sitemap, robots, 공유 이미지 주소가 올바르게 생성됩니다.
 
 ### Backend
 
@@ -129,6 +129,10 @@ NEXT_PUBLIC_GOOGLE_ADSENSE_LEFT_RAIL_SLOT_ID=왼쪽_광고단위_ID
 ```
 
 게시자 ID가 없으면 실제 광고 스크립트를 렌더링하지 않습니다. 데스크톱 왼쪽 광고에는 광고 단위 ID도 필요하고, 모바일 하단 광고는 Google의 하단 앵커 형식을 사용합니다. AdSense에서 다른 자동 광고 형식을 추가로 켜면 지정한 영역 밖에도 광고가 표시될 수 있으므로 불필요한 인페이지·전면 광고 형식은 끄거나 페이지 제외 설정을 사용합니다. 실제 배포 전에는 AdSense 사이트 승인, 루트 도메인의 `ads.txt`, 개인정보처리방침의 운영자 정보, 그리고 필요한 지역의 동의 메시지(CMP)를 별도로 설정해야 합니다.
+
+### SEO
+
+Next.js Metadata API로 페이지별 제목·설명·canonical URL, Open Graph/Twitter 공유 이미지, 구조화 데이터를 제공합니다. `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`도 자동 생성됩니다. 배포 환경에는 `SITE_URL=https://실제도메인`을 설정하고, Google Search Console 등록 후 필요하면 `GOOGLE_SITE_VERIFICATION`에 HTML 태그의 `content` 값을 입력합니다. 개인정보처리방침과 이용약관은 링크 탐색은 허용하지만 검색 색인에서는 제외합니다.
 
 ### 서비스 안내와 정책
 

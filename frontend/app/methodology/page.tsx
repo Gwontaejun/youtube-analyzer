@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { createPageMetadata } from "../../src/shared/seo";
+
+export const metadata = createPageMetadata({
+  title: "분석 기준",
+  description:
+    "Channelytics의 채널 통계, 최근 영상 성과, 댓글 분류와 AI 인사이트 산출 기준을 확인하세요.",
+  path: "/methodology",
+});
 
 export default function MethodologyPage() {
   return (

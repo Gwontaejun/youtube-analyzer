@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { createPageMetadata } from "../../src/shared/seo";
+
+export const metadata = createPageMetadata({
+  title: "서비스 소개",
+  description:
+    "Channelytics가 공개 유튜브 채널의 최근 영상 성과와 댓글 반응을 어떻게 정리하는지 소개합니다.",
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (
